@@ -1,5 +1,6 @@
 flask
 langchain-groq
+langchain
 numpy
 pandas
 scikit-learn
