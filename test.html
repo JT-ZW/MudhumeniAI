@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Weather Information - Mudhumeni AI</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        body {
+            background: #ffffff;
+            min-height: 100vh;
+            padding-top: 70px;
+        }
+
+        /* Navigation Styles */
+        .navbar {
+            background: #557153;
+            padding: 15px 30px;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+        }
+
+        .navbar-brand {
+            color: white;
+            font-size: 1.5em;
+            font-weight: 600;
+            text-decoration: none;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 20px;
+            margin-left: auto;
+        }
+
+        .nav-links a {
+            color: white;
+            text-decoration: none;
+            padding: 5px 15px;
+            border-radius: 20px;
+            transition: background 0.3s;
+        }
+
+        .nav-links a:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        /* Main Content Styles */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .weather-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .weather-header h1 {
+            color: #557153;
+            margin-bottom: 10px;
+        }
+
+        .province-selector {
+            max-width: 400px;
+            margin: 0 auto 30px;
+        }
+
+        select {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 16px;
+            background-color: white;
+            cursor: pointer;
+        }
+
+        .weather-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 40px;
+        }
+
+        .weather-card {
+            background: white;
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+
+        .weather-icon {
+            font-size: 40px;
+            color: #557153;
+            margin-bottom: 15px;
+        }
+
+        .weather-value {
+            font-size: 24px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 5px;
+        }
+
+        .weather-label {
+            color: #666;
+            font-size: 14px;
+        }
+
+        .weather-description {
+            grid-column: 1 / -1;
+            text-align: center;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 10px;
+        }
+
+        .last-updated {
+            text-align: center;
+            color: #666;
+            font-size: 14px;
+            margin-top: 20px;
+        }
+
+        /* Footer Styles */
+        .footer {
+            background: #557153;
+            color: white;
+            padding: 20px 0;
+            position: fixed;
+            bottom: 0;
+            width: 100%;
+        }
+
+        .footer-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .footer-links {
+            display: flex;
+            gap: 20px;
+        }
+
+        .footer-links a {
+            color: white;
+            text-decoration: none;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <a href="{{ url_for('landing') }}" class="navbar-brand">Mudhumeni AI</a>
+        <div class="nav-links">
+            <a href="{{ url_for('landing') }}">Home</a>
+            <a href="{{ url_for('chatbot') }}">Chatbot</a>
+            <a href="{{ url_for('crop_recommendation') }}">Crop Recommender</a>
+            <a href="{{ url_for('weather_page') }}" class="active">Weather</a>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="container">
+        <div class="weather-header">
+            <h1>Zimbabwe Weather Information</h1>
+            <p>Select your province to view current weather conditions</p>
+        </div>
+
+        <div class="province-selector">
+            <select id="province">
+                <option value="" disabled selected>Select Province</option>
+                <option value="harare">Harare</option>
+                <option value="bulawayo">Bulawayo</option>
+                <option value="manicaland">Manicaland</option>
+                <option value="mashonaland_central">Mashonaland Central</option>
+                <option value="mashonaland_east">Mashonaland East</option>
+                <option value="mashonaland_west">Mashonaland West</option>
+                <option value="masvingo">Masvingo</option>
+                <option value="matabeleland_north">Matabeleland North</option>
+                <option value="matabeleland_south">Matabeleland South</option>
+                <option value="midlands">Midlands</option>
+            </select>
+        </div>
+
+        <div class="weather-grid" style="display: none;">
+            <div class="weather-card">
+                <div class="weather-icon">
+                    <i class="fas fa-thermometer-half"></i>
+                </div>
+                <div class="weather-value"><span id="temperature">--</span>°C</div>
+                <div class="weather-label">Temperature</div>
+            </div>
+
+            <div class="weather-card">
+                <div class="weather-icon">
+                    <i class="fas fa-tint"></i>
+                </div>
+                <div class="weather-value"><span id="humidity">--</span>%</div>
+                <div class="weather-label">Humidity</div>
+            </div>
+
+            <div class="weather-card">
+                <div class="weather-icon">
+                    <i class="fas fa-cloud-rain"></i>
+                </div>
+                <div class="weather-value"><span id="rainfall">--</span>%</div>
+                <div class="weather-label">Chance of Rain</div>
+            </div>
+
+            <div class="weather-card">
+                <div class="weather-icon">
+                    <i class="fas fa-wind"></i>
+                </div>
+                <div class="weather-value"><span id="wind">--</span> km/h</div>
+                <div class="weather-label">Wind Speed</div>
+            </div>
+
+            <div class="weather-description">
+                <i class="fas fa-info-circle"></i>
+                <span id="description">--</span>
+            </div>
+
+            <div class="last-updated">
+                Last updated: <span id="last-updated">--</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-content">
+            <div class="copyright">
+                <p>© <span id="currentYear"></span> Mudhumeni AI. All Rights Reserved.</p>
+            </div>
+            <div class="footer-links">
+                <a href="{{ url_for('landing') }}">Home</a>
+                <a href="{{ url_for('chatbot') }}">Chatbot</a>
+                <a href="{{ url_for('crop_recommendation') }}">Crop Recommender</a>
+                <a href="{{ url_for('weather_page') }}">Weather</a>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Set current year
+        document.getElementById('currentYear').textContent = new Date().getFullYear();
+
+        // Weather functionality
+        $('#province').change(function() {
+            const province = $(this).val();
+            if (province) {
+                $.get(`/get_weather/${province}`, function(data) {
+                    if (!data.error) {
+                        $('#temperature').text(data.temperature);
+                        $('#humidity').text(data.humidity);
+                        $('#rainfall').text(data.rainfall_chance);
+                        $('#wind').text(data.wind_speed);
+                        $('#description').text(data.description);
+                        $('#last-updated').text(data.last_updated);
+                        $('.weather-grid').slideDown();
+                    } else {
+                        alert('Unable to fetch weather data. Please try again later.');
+                        $('.weather-grid').slideUp();
+                    }
+                });
+            } else {
+                $('.weather-grid').slideUp();
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Mudhumeni AI Chatbot</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        :root {
+            --primary-color: #4CAF50;
+            --secondary-color: #81C784;
+            --bg-color: #F5F7FA;
+            --text-color: #333;
+            --message-bg-user: #4CAF50;
+            --message-bg-bot: #fff;
+            --shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            --nav-bg: #fff;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', sans-serif;
+        }
+
+        body {
+            background: var(--bg-color);
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding-top: 100px; /* Increased to accommodate nav bar */
+            color: var(--text-color);
+        }
+
+        #chat-container {
+            width: 95%;
+            max-width: 1000px;
+            height: 85vh;
+            background: #fff;
+            border-radius: 24px;
+            box-shadow: var(--shadow);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .header {
+            background: var(--primary-color);
+            padding: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            justify-content: space-between;
+        }
+
+        .header-content {
+            display: flex;
+            flex-direction: column;
+            width: 100%;
+        }
+
+        .header-title {
+            color: white;
+            font-size: 1.5rem;
+            font-weight: 600;
+        }
+
+        .header-status {
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 0.9rem;
+        }
+
+        #chat-history {
+            flex-grow: 1;
+            padding: 24px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            background: var(--bg-color);
+        }
+
+        .message {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            max-width: 80%;
+            animation: fadeIn 0.3s ease-in-out;
+        }
+
+        .message.user {
+            margin-left: auto;
+            flex-direction: row-reverse;
+        }
+
+        .avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .message-content {
+            padding: 16px;
+            border-radius: 16px;
+            box-shadow: var(--shadow);
+            line-height: 1.5;
+        }
+
+        .user .message-content {
+            background: var(--message-bg-user);
+            color: white;
+            border-bottom-right-radius: 4px;
+        }
+
+        .assistant .message-content {
+            background: var(--message-bg-bot);
+            border-bottom-left-radius: 4px;
+        }
+
+        #chat-form {
+            padding: 24px;
+            background: white;
+            border-top: 1px solid rgba(0, 0, 0, 0.1);
+        }
+
+        .input-container {
+            display: flex;
+            gap: 12px;
+            background: var(--bg-color);
+            padding: 8px;
+            border-radius: 16px;
+            border: 1px solid rgba(0, 0, 0, 0.1);
+        }
+
+        #user-input {
+            flex-grow: 1;
+            border: none;
+            background: transparent;
+            padding: 8px;
+            font-size: 1rem;
+            outline: none;
+        }
+
+        button {
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 8px 24px;
+            border-radius: 12px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        button:hover {
+            background: var(--secondary-color);
+            transform: translateY(-1px);
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @media (max-width: 768px) {
+            #chat-container {
+                width: 100%;
+                height: 100vh;
+                border-radius: 0;
+            }
+
+            .message {
+                max-width: 90%;
+            }
+        }
+
+        /* Add navigation styles */
+        .nav-bar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background: var(--nav-bg);
+            padding: 1rem 2rem;
+            box-shadow: var(--shadow);
+            z-index: 1000;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .nav-logo {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--primary-color);
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 2rem;
+        }
+
+        .nav-links a {
+            color: var(--text-color);
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.3s ease;
+        }
+
+        .nav-links a:hover {
+            color: var(--primary-color);
+        }
+    </style>
+</head>
+<body>
+    <nav class="nav-bar">
+        <div class="nav-logo">Mudhumeni AI</div>
+        <div class="nav-links">
+            <a href="/">Home</a>
+            <a href="/chatbot">Chatbot</a>
+            <a href="/crop-recommendation">Crop Recommendation</a>
+        </div>
+    </nav>
+
+    <div id="chat-container">
+        <div class="header">
+            <div class="header-content">
+                <div class="header-title">Mudhumeni AI Bot</div>
+                <div class="header-status">Let's talk all things farming</div>
+            </div>
+        </div>
+        <div id="chat-history">
+            <div class="message assistant">
+                <div class="message-content">
+                    Hello! I'm your Mudhumeni AI assistant. How can I help you today?
+                </div>
+            </div>
+        </div>
+        <form id="chat-form">
+            <div class="input-container">
+                <input type="text" id="user-input" placeholder="Type your message here..." autocomplete="off">
+                <button type="submit">
+                    <i class="fas fa-paper-plane"></i>
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <script>
+        $(document).ready(function() {
+            function createMessage(content, role) {
+                return `
+                    <div class="message ${role}">
+                        <div class="message-content">${content}</div>
+                    </div>
+                `;
+            }
+
+            function scrollToBottom() {
+                const chatHistory = document.getElementById('chat-history');
+                chatHistory.scrollTop = chatHistory.scrollHeight;
+            }
+
+            $('#chat-form').on('submit', function(e) {
+                e.preventDefault();
+                const userInput = $('#user-input').val().trim();
+                
+                if (!userInput) return;
+
+                $('#chat-history').append(createMessage(userInput, 'user'));
+                $('#user-input').val('').prop('disabled', true);
+                scrollToBottom();
+
+                $.ajax({
+                    url: '/get_response',
+                    type: 'POST',
+                    data: {user_input: userInput},
+                    success: function(response) {
+                        $('#chat-history').append(createMessage(response.response, 'assistant'));
+                        scrollToBottom();
+                    },
+                    error: function() {
+                        $('#chat-history').append(createMessage('Sorry, I encountered an error. Please try again.', 'assistant'));
+                    },
+                    complete: function() {
+                        $('#user-input').prop('disabled', false).focus();
+                    }
+                });
+            });
+
+            $('#user-input').keypress(function(e) {
+                if (e.which == 13 && !e.shiftKey) {
+                    e.preventDefault();
+                    $('#chat-form').submit();
+                }
+            });
+
+            $('#user-input').focus();
+        });
+    </script>
+</body>
+</html>

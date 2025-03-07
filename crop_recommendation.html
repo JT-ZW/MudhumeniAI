@@ -1,0 +1,561 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Crop Recommendation - Mudhumeni AI</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='plugins/bootstrap/bootstrap.min.css') }}">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        body {
+            background: #ffffff;
+            min-height: 100vh;
+            padding: 40px 20px;
+            padding-top: 70px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .header h1 {
+            color: #557153;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            color: #666;
+        }
+
+        .form-container {
+            background: #fff;
+            padding: 30px;
+            border-radius: 20px;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
+            border: 1px solid #e0e0e0;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: 500;
+        }
+
+        input[type="number"] {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+
+        input[type="number"]:focus {
+            outline: none;
+            border-color: #557153;
+        }
+
+        button {
+            width: 100%;
+            padding: 14px;
+            background: #557153;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        button:hover {
+            background: #495F41;
+        }
+
+        .result-container {
+            margin-top: 30px;
+            padding: 20px;
+            border-radius: 8px;
+            display: none;
+        }
+
+        .result-success {
+            background: #e8f5e9;
+            border: 1px solid #c8e6c9;
+            color: #2e7d32;
+        }
+
+        .result-error {
+            background: #ffebee;
+            border: 1px solid #ffcdd2;
+            color: #c62828;
+        }
+
+        .input-hint {
+            font-size: 12px;
+            color: #666;
+            margin-top: 4px;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .loading-spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #557153;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .popup-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            backdrop-filter: blur(5px);
+        }
+
+        .popup-content {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            padding: 40px 30px;
+            border-radius: 20px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+            text-align: center;
+            max-width: 400px;
+            width: 90%;
+            z-index: 1001;
+        }
+
+        .success-icon {
+            font-size: 50px;
+            color: #4CAF50;
+            margin-bottom: 15px;
+        }
+
+        .crop-icon {
+            font-size: 40px;
+            margin: 10px 0;
+            color: #557153;
+        }
+
+        .crop-name {
+            font-size: 24px;
+            font-weight: 600;
+            color: #333;
+            margin: 15px 0;
+        }
+
+        .close-popup {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            font-size: 24px;
+            color: #666;
+            cursor: pointer;
+            transition: color 0.3s;
+        }
+
+        .close-popup:hover {
+            color: #333;
+        }
+
+        .popup-content button {
+            margin-top: 20px;
+            padding: 10px 25px;
+            width: auto;
+        }
+
+        .form-select {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+            background-color: white;
+            cursor: pointer;
+            appearance: none;
+            -webkit-appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%23333' viewBox='0 0 16 16'%3E%3Cpath d='M7.247 11.14L2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 1rem center;
+            background-size: 12px;
+        }
+
+        .form-select:focus {
+            outline: none;
+            border-color: #557153;
+        }
+
+        .form-select:hover {
+            border-color: #557153;
+        }
+
+        /* Style for the disabled placeholder */
+        .form-select option[value=""][disabled] {
+            color: #666;
+        }
+
+        .recommendation-text {
+            color: #666;
+            margin-bottom: 15px;
+            font-size: 16px;
+        }
+
+        .recommendation-details {
+            color: #666;
+            font-size: 14px;
+            margin-top: 10px;
+            line-height: 1.4;
+        }
+
+        /* Navigation Styles */
+        .navbar {
+            background: #557153;
+            padding: 15px 30px;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+        }
+
+        .navbar-brand {
+            color: white;
+            font-size: 1.5em;
+            font-weight: 600;
+            text-decoration: none;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 20px;
+            margin-left: auto;
+        }
+
+        .nav-links a {
+            color: white;
+            text-decoration: none;
+            padding: 5px 15px;
+            border-radius: 20px;
+            transition: background 0.3s;
+        }
+
+        .nav-links a:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .nav-links a.active {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .footer {
+            background: #557153;
+            color: white;
+            padding: 20px 0;
+            position: fixed;
+            bottom: 0;
+            width: 100%;
+            z-index: 1000;
+        }
+
+        .footer-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .copyright {
+            font-size: 14px;
+        }
+
+        .footer-links {
+            display: flex;
+            gap: 20px;
+        }
+
+        .footer-links a {
+            color: white;
+            text-decoration: none;
+            font-size: 14px;
+            transition: opacity 0.3s;
+        }
+
+        .footer-links a:hover {
+            opacity: 0.8;
+        }
+
+        /* Adjust main content to prevent footer overlap */
+        .container {
+            margin-bottom: 80px;
+        }
+    </style>
+</head>
+<body>
+    <!-- Add Navigation Bar -->
+    <nav class="navbar">
+        <a href="{{ url_for('landing') }}" class="navbar-brand">Mudhumeni AI</a>
+        <div class="nav-links">
+            <a href="{{ url_for('landing') }}">Home</a>
+            <a href="{{ url_for('chatbot') }}">Chatbot</a>
+            <a href="{{ url_for('crop_recommendation') }}" class="active">Crop Recommender</a>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="header">
+            <h1>Crop Recommendation System</h1>
+            <p>Enter your soil and environmental parameters to get the best crop recommendation</p>
+        </div>
+
+        <div class="form-container">
+            <form id="recommendation-form">
+                <div class="form-group">
+                    <label for="N">Nitrogen (N) Content:</label>
+                    <input type="number" id="N" name="N" required step="0.01">
+                    <div class="input-hint">Measured in mg/kg</div>
+                </div>
+
+                <div class="form-group">
+                    <label for="P">Phosphorus (P) Content:</label>
+                    <input type="number" id="P" name="P" required step="0.01">
+                    <div class="input-hint">Measured in mg/kg</div>
+                </div>
+
+                <div class="form-group">
+                    <label for="K">Potassium (K) Content:</label>
+                    <input type="number" id="K" name="K" required step="0.01">
+                    <div class="input-hint">Measured in mg/kg</div>
+                </div>
+
+                <div class="form-group">
+                    <label for="temperature">Temperature:</label>
+                    <input type="number" id="temperature" name="temperature" required step="0.01">
+                    <div class="input-hint">Measured in °C</div>
+                </div>
+
+                <div class="form-group">
+                    <label for="humidity">Humidity:</label>
+                    <input type="number" id="humidity" name="humidity" required step="0.01">
+                    <div class="input-hint">Measured in %</div>
+                </div>
+
+                <div class="form-group">
+                    <label for="ph">pH Level:</label>
+                    <input type="number" id="ph" name="ph" required step="0.01">
+                    <div class="input-hint">Scale of 0-14</div>
+                </div>
+
+                <div class="form-group">
+                    <label for="rainfall">Rainfall:</label>
+                    <input type="number" id="rainfall" name="rainfall" required step="0.01">
+                    <div class="input-hint">Measured in mm</div>
+                </div>
+
+                <div class="form-group">
+                    <label for="province">Province:</label>
+                    <select id="province" name="province" required class="form-select">
+                        <option value="" disabled selected>Select your province</option>
+                        <option value="bulawayo">Bulawayo</option>
+                        <option value="harare">Harare</option>
+                        <option value="manicaland">Manicaland</option>
+                        <option value="mashonaland_central">Mashonaland Central</option>
+                        <option value="mashonaland_east">Mashonaland East</option>
+                        <option value="mashonaland_west">Mashonaland West</option>
+                        <option value="masvingo">Masvingo</option>
+                        <option value="matabeleland_north">Matabeleland North</option>
+                        <option value="matabeleland_south">Matabeleland South</option>
+                        <option value="midlands">Midlands</option>
+                    </select>
+                    <div class="input-hint">Select the province where your farm is located</div>
+                </div>
+
+                <button type="submit">Get Recommendation</button>
+            </form>
+
+            <div class="loading">
+                <div class="loading-spinner"></div>
+                <p>Analyzing your inputs...</p>
+            </div>
+
+            <div id="result" class="result-container"></div>
+        </div>
+    </div>
+
+    <div class="popup-overlay">
+        <div class="popup-content">
+            <i class="fas fa-times close-popup"></i>
+            <i class="fas fa-check-circle success-icon"></i>
+            <p class="recommendation-text">Based on your soil parameters and location, we recommend:</p>
+            <div id="crop-icon"></div>
+            <div class="crop-name" id="crop-name"></div>
+            <p class="recommendation-details">This crop is well-suited for your environmental conditions and should thrive in your area.</p>
+            <button onclick="closePopup()">Close</button>
+        </div>
+    </div>
+
+    <script>
+        const cropIcons = {
+            'rice': '🌾',
+            'maize': '🌽',
+            'jute': '🌿',
+            'cotton': '💮',
+            'coconut': '🥥',
+            'papaya': '🍈',
+            'orange': '🍊',
+            'apple': '🍎',
+            'muskmelon': '🍈',
+            'watermelon': '🍉',
+            'grapes': '🍇',
+            'mango': '🥭',
+            'banana': '🍌',
+            'pomegranate': '🍎',
+            'lentil': '🫘',
+            'blackgram': '🫘',
+            'mungbean': '🫘',
+            'mothbeans': '🫘',
+            'pigeonpeas': '🫘',
+            'kidneybeans': '🫘',
+            'chickpea': '🫘',
+            'coffee': '☕'
+        };
+
+        function showPopup(cropName) {
+            const formattedCropName = cropName.toLowerCase();
+            const icon = cropIcons[formattedCropName] || '🌱';
+            
+            document.getElementById('crop-icon').innerHTML = `<span style="font-size: 60px;">${icon}</span>`;
+            document.getElementById('crop-name').textContent = cropName;
+            document.querySelector('.popup-overlay').style.display = 'block';
+            
+            // Add animation class to success icon
+            document.querySelector('.success-icon').classList.add('animate__animated', 'animate__bounceIn');
+        }
+
+        function closePopup() {
+            document.querySelector('.popup-overlay').style.display = 'none';
+        }
+
+        $(document).ready(function() {
+            $('#recommendation-form').on('submit', function(e) {
+                e.preventDefault();
+                
+                $('.loading').show();
+                $('#result').hide();
+                
+                const formData = {
+                    N: $('#N').val(),
+                    P: $('#P').val(),
+                    K: $('#K').val(),
+                    temperature: $('#temperature').val(),
+                    humidity: $('#humidity').val(),
+                    ph: $('#ph').val(),
+                    rainfall: $('#rainfall').val(),
+                    province: $('#province').val()
+                };
+
+                $.ajax({
+                    url: '/predict_crop',
+                    type: 'POST',
+                    data: formData,
+                    success: function(response) {
+                        $('.loading').hide();
+                        
+                        if (response.success) {
+                            showPopup(response.prediction.toUpperCase());
+                        } else {
+                            $('#result')
+                                .show()
+                                .removeClass('result-success')
+                                .addClass('result-error')
+                                .html(`<strong>Error:</strong> ${response.error}`);
+                        }
+                    },
+                    error: function() {
+                        $('.loading').hide();
+                        $('#result')
+                            .show()
+                            .removeClass('result-success')
+                            .addClass('result-error')
+                            .html('<strong>Error:</strong> Something went wrong. Please try again.');
+                    }
+                });
+            });
+
+            // Close popup when clicking outside
+            $('.popup-overlay').click(function(e) {
+                if (e.target === this) {
+                    closePopup();
+                }
+            });
+
+            // Close popup when clicking the close icon
+            $('.close-popup').click(closePopup);
+
+            // Close popup when pressing ESC key
+            $(document).keydown(function(e) {
+                if (e.key === "Escape") {
+                    closePopup();
+                }
+            });
+        });
+    </script>
+
+    <footer class="footer">
+        <div class="footer-content">
+            <div class="copyright">
+                <p>© <span id="currentYear"></span> Mudhumeni AI. All Rights Reserved.</p>
+            </div>
+            <div class="footer-links">
+                <a href="{{ url_for('landing') }}">Home</a>
+                <a href="{{ url_for('chatbot') }}">Chatbot</a>
+                <a href="{{ url_for('crop_recommendation') }}">Crop Recommender</a>
+                <a href="{{ url_for('weather_page') }}">Weather</a>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        document.getElementById('currentYear').textContent = new Date().getFullYear();
+    </script>
+</body>
+</html> 
