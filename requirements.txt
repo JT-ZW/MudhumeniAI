@@ -1,0 +1,8 @@
+flask
+langchain-groq
+numpy
+pandas
+scikit-learn
+requests
+gunicorn
+Werkzeug==2.3.7
